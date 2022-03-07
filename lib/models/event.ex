@@ -1,5 +1,6 @@
 defmodule Event do
   defstruct type: :start,
     from: :world,
-    to: :all
+    to: :all,
+    value: 0
 end
