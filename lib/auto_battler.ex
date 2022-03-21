@@ -114,12 +114,10 @@ defmodule AutoBattler do
           updated_damage_team = List.replace_at(damaged_team, Enum.find_index(damaged_team, fn u -> u.id == damaged_to.id end), damaged_to)
           cond do
             damaged_team == team1 ->
-              IEx.pry
               {updated_damage_team, team2, evs}
             true ->
               {team1, updated_damage_team, evs}
           end
-
 
         :start ->
           start_events = start(team1, team2, team1, team2, [])
@@ -131,8 +129,8 @@ defmodule AutoBattler do
         # We've exhausted events. Check if there are still units to battle
         if Enum.any?(t1, fn u -> u.health > 0 end) and
             Enum.any?(t2, fn u -> u.health > 0 end) do
-          team1_unit = Enum.find(t1, fn u -> u.health >= 0 end)
-          team2_unit = Enum.find(t2, fn u -> u.health >= 0 end)
+          team1_unit = Enum.filter(t1, fn u -> u.health > 0 end) |> Enum.sort(fn u1, u2 -> u1.health <= u2.health end) |> hd()
+          team2_unit = Enum.filter(t2, fn u -> u.health > 0 end) |> Enum.sort(fn u1, u2 -> u1.health <= u2.health end) |> hd()
           battle_event = %Event{type: :battle, from: team1_unit, to: team2_unit}
           {t1, t2, [battle_event]}
         else
