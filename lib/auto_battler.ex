@@ -29,9 +29,19 @@ defmodule AutoBattler do
         to_unit = mosquito_start(enemies)
         mosquito_damage = unit.level
         [%Event{type: :attack, to: to_unit, from: unit, value: mosquito_damage}]
-
       _ ->
        []
+    end
+  end
+
+  def on_hurt_handler(unit, friends, enemies) do
+    case unit.type do
+      :pufferfish ->
+        to_unit = mosquito_start(enemies)
+        damage = 2 * unit.level
+        [%Event{type: :attack, to: to_unit, from: unit, value: damage}]
+      _ ->
+        []
     end
   end
 
