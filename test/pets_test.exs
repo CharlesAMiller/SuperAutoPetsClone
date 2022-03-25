@@ -1,4 +1,8 @@
 defmodule PetsTest do
+  @moduledoc """
+  This test module is meant to individually test the special behaviors of different units/pets.
+  TODO: Consider moving these tests to different files, as the number of tests increases.
+  """
   use ExUnit.Case
 
   test "Mosquito on_start level 1" do
