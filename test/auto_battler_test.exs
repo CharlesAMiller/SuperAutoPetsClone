@@ -22,6 +22,26 @@ defmodule AutoBattlerTest do
     assert :tie = AutoBattler.sim(team1, team2, [%Event{type: :start}])
   end
 
+  test "crocodile vs dolphin sim" do
+    {team1, team2} = Util.tag_ids([Unit.createCrocodile], [Unit.createDolphin])
+    assert :tie = AutoBattler.sim(team1, team2, [%Event{type: :start}])
+  end
+
+  test "crocodile vs dolphin and otter sim" do
+    {team1, team2} = Util.tag_ids([Unit.createCrocodile], [Unit.createDolphin, Unit.createOtter])
+    assert :team2 = AutoBattler.sim(team1, team2, [%Event{type: :start}])
+  end
+
+  test "3x mosquito vs leopard sim" do
+    {team1, team2} = Util.tag_ids([Unit.createMosquito, Unit.createMosquito, Unit.createMosquito], [Unit.createLeopard])
+    assert :team1 = AutoBattler.sim(team1, team2, [%Event{type: :start}])
+  end
+
+  test "5x mosquito vs 5x leopard sim" do
+    {team1, team2} = Util.tag_ids([Unit.createMosquito, Unit.createMosquito, Unit.createMosquito, Unit.createMosquito, Unit.createMosquito], [Unit.createLeopard, Unit.createLeopard, Unit.createLeopard, Unit.createLeopard, Unit.createLeopard])
+    assert :team2 = AutoBattler.sim(team1, team2, [%Event{type: :start}])
+  end
+
   test "2x fish vs 2x fish" do
     {team1, team2} = Util.tag_ids([Unit.createFish, Unit.createFish], [Unit.createFish, Unit.createFish])
 
@@ -82,5 +102,4 @@ defmodule AutoBattlerTest do
     assert team2_2 == [%Unit{type: :otter, power: 1, health: 0}]
     assert events_2 == []
   end
-
 end

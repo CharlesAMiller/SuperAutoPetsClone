@@ -9,14 +9,20 @@ defmodule AutoBattler do
   """
   @num_units 6
 
-  def mosquito_start(enemies) do
-    Enum.random(enemies)
-  end
-
   def start(team1, team2, [team1_head | team1_tail], [team2_head | team2_tail], events) do
     team1_events = start_handler(team1_head, team1, team2)
     team2_events = start_handler(team2_head, team2, team1)
-    start(team1_tail, team2_tail, team1_tail, team2_tail, events ++ team1_events ++ team2_events)
+    start(team1, team2, team1_tail, team2_tail, events ++ team1_events ++ team2_events)
+  end
+
+  def start(team1, team2, [], [team2_head | team2_tail], events) do
+    team2_events = start_handler(team2_head, team2, team1)
+    start(team1, team2, [], team2_tail, events ++ team2_events)
+  end
+
+  def start(team1, team2, [team1_head | team1_tail], [], events) do
+    team1_events = start_handler(team1_head, team1, team2)
+    start(team1, team2, team1_tail, [], events ++ team1_events)
   end
 
   def start(team1, team2, [], [], events) do
@@ -25,11 +31,15 @@ defmodule AutoBattler do
 
   def start_handler(unit, friends, enemies) do
     case unit.type do
+      :crocodile ->
+        Crocodile.on_start(unit, friends, enemies)
+      :dolphin ->
+        Dolphin.on_start(unit, friends, enemies)
+      :leopard ->
+        Leopard.on_start(unit, friends, enemies)
       :mosquito ->
-        to_unit = mosquito_start(enemies)
-        mosquito_damage = unit.level
-        [%Event{type: :attack, to: to_unit, from: unit, value: mosquito_damage}]
-      _ ->
+        Mosquito.on_start(unit, friends, enemies)
+     _ ->
        []
     end
   end
@@ -37,9 +47,7 @@ defmodule AutoBattler do
   def on_hurt_handler(unit, friends, enemies) do
     case unit.type do
       :pufferfish ->
-        to_unit = mosquito_start(enemies)
-        damage = 2 * unit.level
-        [%Event{type: :attack, to: to_unit, from: unit, value: damage}]
+        Pufferfish.on_hurt(unit, friends, enemies)
       _ ->
         []
     end
