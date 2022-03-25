@@ -24,3 +24,5 @@ auto_battler-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+.gitconfig
