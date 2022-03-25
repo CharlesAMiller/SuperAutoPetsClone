@@ -12,7 +12,17 @@ defmodule AutoBattler do
   def start(team1, team2, [team1_head | team1_tail], [team2_head | team2_tail], events) do
     team1_events = start_handler(team1_head, team1, team2)
     team2_events = start_handler(team2_head, team2, team1)
-    start(team1_tail, team2_tail, team1_tail, team2_tail, events ++ team1_events ++ team2_events)
+    start(team1, team2, team1_tail, team2_tail, events ++ team1_events ++ team2_events)
+  end
+
+  def start(team1, team2, [], [team2_head | team2_tail], events) do
+    team2_events = start_handler(team2_head, team2, team1)
+    start(team1, team2, [], team2_tail, events ++ team2_events)
+  end
+
+  def start(team1, team2, [team1_head | team1_tail], [], events) do
+    team1_events = start_handler(team1_head, team1, team2)
+    start(team1, team2, team1_tail, [], events ++ team1_events)
   end
 
   def start(team1, team2, [], [], events) do
@@ -21,9 +31,15 @@ defmodule AutoBattler do
 
   def start_handler(unit, friends, enemies) do
     case unit.type do
+      :crocodile ->
+        Crocodile.on_start(unit, friends, enemies)
+      :dolphin ->
+        Dolphin.on_start(unit, friends, enemies)
+      :leopard ->
+        Leopard.on_start(unit, friends, enemies)
       :mosquito ->
         Mosquito.on_start(unit, friends, enemies)
-      _ ->
+     _ ->
        []
     end
   end
