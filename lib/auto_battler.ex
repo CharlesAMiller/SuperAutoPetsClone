@@ -3,12 +3,6 @@ defmodule AutoBattler do
   Documentation for `AutoBattler`.
   """
 
-  @doc """
-  Hello world.
-
-  """
-  @num_units 6
-
   def start(team1, team2, [team1_head | team1_tail], [team2_head | team2_tail], events) do
     team1_events = start_handler(team1_head, team1, team2)
     team2_events = start_handler(team2_head, team2, team1)
@@ -76,12 +70,31 @@ defmodule AutoBattler do
     end
   end
 
+  def update_unit_in_teams(updated_unit, team1, team2) do
+    if Enum.find(team1, fn u -> updated_unit.id == u.id end) do
+      {List.replace_at(team1, Enum.find_index(team1, fn u -> u.id == updated_unit.id end), updated_unit), team2}
+    else
+      {team1, List.replace_at(team1, Enum.find_index(team2, fn u -> u.id == updated_unit.id end), updated_unit)}
+    end
+  end
+
+  def update_units(updated_units, team1, team2) do
+    if Enum.empty?(updated_units) do
+      {team1, team2}
+    else
+      update_unit_in_teams()
+    end
+  end
+
+  # def battle_event(event, from, to, team1, team2) do
+  #   if from_unit.health
+  # end
+
   """
     Primary logic that handles in-game battles.
     This function is recursively called, and expects that the given events parameter
     will be non empty. In the case this function returns an empty events list, it should indicate that the battle is over.
   """
-
   @spec battle(any, any, list) :: {any, any, any}
   def battle(team1, team2, events) when length(events) > 0 do
     # Process a single event per loop.
@@ -89,44 +102,29 @@ defmodule AutoBattler do
 
     all_units = team1 ++ team2
 
+    # Find those involved in the event
+    {from_unit, to_unit} = unless event.type == :start do
+      {Enum.find(all_units, fn u -> u.id == event.from.id end), Enum.find(all_units, fn u -> u.id == event.to.id end)}
+    else
+      # The event was not originted by a unit, nor was it targeting a particular unit. E.g. a :start event
+      {nil, nil}
+    end
+
     {t1, t2, e} =
       case event.type do
         :battle ->
-          # Find those involved in the battle
-          from_unit = Enum.find(team1, fn u -> u.id == event.from.id end)
-          to_unit = Enum.find(team2, fn u -> u.id == event.to.id end)
-
           # Ensure the two units are both alive. Otherwise, the event won't resolve
           {t1, t2, e} =
             if from_unit.health > 0 and to_unit.health > 0 do
               damaged_from = Map.update(from_unit, :health, 0, fn value -> value - to_unit.power end)
               damaged_to = Map.update(to_unit, :health, 0, fn value -> value - from_unit.power end)
 
-              # This is where we'd put damaged or killed event handling ...
-
-              t1 =
-                List.replace_at(
-                  team1,
-                  Enum.find_index(team1, fn u -> u.id == damaged_from.id end),
-                  damaged_from
-                )
-
-              t2 =
-                List.replace_at(
-                  team2,
-                  Enum.find_index(team2, fn u -> u.id == damaged_to.id end),
-                  damaged_to
-                )
-
-              {t1, t2, evs}
+              {update_unit_in_teams(damaged_from, team1, team2), update_unit_in_teams(damaged_to, team1, team2), evs}
             else
               {team1, team2, evs}
             end
 
         :attack ->
-          from_unit = Enum.find(all_units, fn u -> u.id == event.from.id end)
-          to_unit = Enum.find(all_units, fn u -> u.id == event.to.id end)
-
           damaged_to = Map.update(to_unit, :health, 0, fn value -> value - event.value end)
           damaged_team = if Enum.member?(team1, to_unit), do: team1, else: team2
           updated_damage_team = List.replace_at(damaged_team, Enum.find_index(damaged_team, fn u -> u.id == damaged_to.id end), damaged_to)
